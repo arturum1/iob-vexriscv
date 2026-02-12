@@ -16,6 +16,7 @@ import vexriscv.{Riscv, VexRiscv, VexRiscvConfig, plugin}
 
 object VexRiscvAxi4LinuxPlicClint{
   def main(args: Array[String]) {
+    val generatePlicClint = args.contains("plic-clint")
     val report = SpinalVerilog{
 
       //CPU configuration
@@ -105,19 +106,39 @@ object VexRiscvAxi4LinuxPlicClint{
 
       //CPU instanciation
       val cpu = new VexRiscv(cpuConfig){
-        val clintCtrl = new AxiLite4Clint(1, bufferTime = false)
-        val plicCtrl = new AxiLite4Plic(
-          sourceCount = 31,
-          targetCount = 2
-        )
+        var clintCtrl: AxiLite4Clint = null
+        var plicCtrl: AxiLite4Plic = null
 
-        val clint = clintCtrl.io.bus.toIo()
-        val plic = plicCtrl.io.bus.toIo()
-        val plicInterrupts = in Bits(32 bits)
-        plicCtrl.io.sources := plicInterrupts >> 1
+        if(generatePlicClint) {
+          clintCtrl = new AxiLite4Clint(1, bufferTime = false)
+          plicCtrl = new AxiLite4Plic(
+            sourceCount = 31,
+            targetCount = 2
+          )
+        }
 
-        AxiLite4SpecRenamer(clint)
-        AxiLite4SpecRenamer(plic)
+        val clint = if(generatePlicClint) clintCtrl.io.bus.toIo() else null
+        val plic = if(generatePlicClint) plicCtrl.io.bus.toIo() else null
+
+        val externalInterrupts = if (generatePlicClint) in(Bits(32 bits)) else null
+
+        // External Timer Interrupt: Connect to an external timer interrupt source.
+        val clint_timerInterrupt = if(!generatePlicClint) in(Bool) else null
+        // External Software Interrupt: Connect to an external software interrupt source.
+        val clint_softwareInterrupt = if(!generatePlicClint) in(Bool) else null
+        // External Machine-mode External Interrupt: Connect to an external machine-mode interrupt source.
+        val plic_externalInterrupt = if(!generatePlicClint) in(Bool) else null
+        // External Supervisor-mode External Interrupt: Connect to an external supervisor-mode interrupt source.
+        val plic_externalInterruptS = if(!generatePlicClint) in(Bool) else null
+        // External Utime: Connect to an external 64-bit time counter.
+        val clint_utime = if(!generatePlicClint) in(UInt(64 bits)) else null
+
+        if(generatePlicClint) {
+          plicCtrl.io.sources := externalInterrupts >> 1
+
+          AxiLite4SpecRenamer(clint)
+          AxiLite4SpecRenamer(plic)
+        }
       }
 
       //CPU modifications to be an Avalon one
@@ -141,11 +162,19 @@ object VexRiscvAxi4LinuxPlicClint{
             )
           }
           case plugin: CsrPlugin => {
-            plugin.timerInterrupt     setAsDirectionLess() := cpu.clintCtrl.io.timerInterrupt(0)
-            plugin.softwareInterrupt  setAsDirectionLess() := cpu.clintCtrl.io.softwareInterrupt(0)
-            plugin.externalInterrupt  setAsDirectionLess() := cpu.plicCtrl.io.targets(0)
-            plugin.externalInterruptS setAsDirectionLess() := cpu.plicCtrl.io.targets(1)
-            plugin.utime              setAsDirectionLess() := cpu.clintCtrl.io.time
+            if(generatePlicClint) {
+              plugin.timerInterrupt.setAsDirectionLess().setName("csr_timerInterrupt") := cpu.clintCtrl.io.timerInterrupt(0)
+              plugin.softwareInterrupt.setAsDirectionLess().setName("csr_softwareInterrupt") := cpu.clintCtrl.io.softwareInterrupt(0)
+              plugin.externalInterrupt.setAsDirectionLess().setName("csr_externalInterrupt") := cpu.plicCtrl.io.targets(0)
+              plugin.externalInterruptS.setAsDirectionLess().setName("csr_externalInterruptS") := cpu.plicCtrl.io.targets(1)
+              plugin.utime.setAsDirectionLess().setName("csr_utime") := cpu.clintCtrl.io.time
+            } else {
+              plugin.timerInterrupt.setAsDirectionLess().setName("csr_timerInterrupt") := cpu.clint_timerInterrupt
+              plugin.softwareInterrupt.setAsDirectionLess().setName("csr_softwareInterrupt") := cpu.clint_softwareInterrupt
+              plugin.externalInterrupt.setAsDirectionLess().setName("csr_externalInterrupt") := cpu.plic_externalInterrupt
+              plugin.externalInterruptS.setAsDirectionLess().setName("csr_externalInterruptS") := cpu.plic_externalInterruptS
+              plugin.utime.setAsDirectionLess().setName("csr_utime") := cpu.clint_utime
+            }
           }
           case _ =>
         }
