@@ -14,7 +14,7 @@ import vexriscv.ip.{DataCacheConfig, InstructionCacheConfig}
 import vexriscv.plugin._
 import vexriscv.{Riscv, VexRiscv, VexRiscvConfig, plugin}
 
-object VexRiscvAxi4LinuxPlicClint{
+object VexRiscvAxi4Linux{
   def main(args: Array[String]) {
     val generatePlicClint = args.contains("plic-clint")
     val report = SpinalVerilog{
@@ -123,15 +123,15 @@ object VexRiscvAxi4LinuxPlicClint{
         val externalInterrupts = if (generatePlicClint) in(Bits(32 bits)) else null
 
         // External Timer Interrupt: Connect to an external timer interrupt source.
-        val clint_timerInterrupt = if(!generatePlicClint) in(Bool) else null
+        val mtip = if(!generatePlicClint) in(Bool) else null
         // External Software Interrupt: Connect to an external software interrupt source.
-        val clint_softwareInterrupt = if(!generatePlicClint) in(Bool) else null
+        val msip = if(!generatePlicClint) in(Bool) else null
         // External Machine-mode External Interrupt: Connect to an external machine-mode interrupt source.
-        val plic_externalInterrupt = if(!generatePlicClint) in(Bool) else null
+        val meip = if(!generatePlicClint) in(Bool) else null
         // External Supervisor-mode External Interrupt: Connect to an external supervisor-mode interrupt source.
-        val plic_externalInterruptS = if(!generatePlicClint) in(Bool) else null
-        // External Utime: Connect to an external 64-bit time counter.
-        val clint_utime = if(!generatePlicClint) in(UInt(64 bits)) else null
+        val seip = if(!generatePlicClint) in(Bool) else null
+        // External mtime: Connect to an external 64-bit time counter.
+        val mtime = if(!generatePlicClint) in(UInt(64 bits)) else null
 
         if(generatePlicClint) {
           plicCtrl.io.sources := externalInterrupts >> 1
@@ -142,7 +142,7 @@ object VexRiscvAxi4LinuxPlicClint{
       }
 
       //CPU modifications to be an Avalon one
-      cpu.setDefinitionName("VexRiscvAxi4LinuxPlicClint")
+      cpu.setDefinitionName("VexRiscvAxi4Linux")
       cpu.rework {
         for (plugin <- cpuConfig.plugins) plugin match {
           case plugin: IBusCachedPlugin => {
@@ -169,11 +169,11 @@ object VexRiscvAxi4LinuxPlicClint{
               plugin.externalInterruptS.setAsDirectionLess().setName("csr_externalInterruptS") := cpu.plicCtrl.io.targets(1)
               plugin.utime.setAsDirectionLess().setName("csr_utime") := cpu.clintCtrl.io.time
             } else {
-              plugin.timerInterrupt.setAsDirectionLess().setName("csr_timerInterrupt") := cpu.clint_timerInterrupt
-              plugin.softwareInterrupt.setAsDirectionLess().setName("csr_softwareInterrupt") := cpu.clint_softwareInterrupt
-              plugin.externalInterrupt.setAsDirectionLess().setName("csr_externalInterrupt") := cpu.plic_externalInterrupt
-              plugin.externalInterruptS.setAsDirectionLess().setName("csr_externalInterruptS") := cpu.plic_externalInterruptS
-              plugin.utime.setAsDirectionLess().setName("csr_utime") := cpu.clint_utime
+              plugin.timerInterrupt.setAsDirectionLess().setName("csr_timerInterrupt") := cpu.mtip
+              plugin.softwareInterrupt.setAsDirectionLess().setName("csr_softwareInterrupt") := cpu.msip
+              plugin.externalInterrupt.setAsDirectionLess().setName("csr_externalInterrupt") := cpu.meip
+              plugin.externalInterruptS.setAsDirectionLess().setName("csr_externalInterruptS") := cpu.seip
+              plugin.utime.setAsDirectionLess().setName("csr_utime") := cpu.mtime
             }
           }
           case _ =>
