@@ -14,7 +14,7 @@ VEX_SUBMODULES_DIR:=$(VEXRISCV_DIR)/submodules
 CPU ?= VexRiscvAxi4Linux
 JDK_HOME := $(shell dirname $$(dirname $$(which java)))
 
-GENERATE_PLIC_CLINT ?=1
+GENERATE_PLIC_CLINT ?=0
 
 ifneq ($(GENERATE_PLIC_CLINT),0)
 SPINALHDL_ARGS=plic-clint
