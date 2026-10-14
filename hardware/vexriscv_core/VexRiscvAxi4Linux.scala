@@ -5,6 +5,7 @@
 package vexriscv.demo
 
 import spinal.core._
+import spinal.core.blackboxAllWhatsYouCan
 import spinal.lib._
 import spinal.lib.bus.amba4.axi.{Axi4ReadOnly, Axi4SpecRenamer}
 import spinal.lib.bus.amba4.axilite.AxiLite4SpecRenamer
@@ -25,8 +26,7 @@ object VexRiscvAxi4Linux{
       case "DYNAMIC_TARGET" => DYNAMIC_TARGET
       case other            => throw new IllegalArgumentException(s"Unknown branch prediction strategy: $other (expected NONE, STATIC, DYNAMIC or DYNAMIC_TARGET)")
     }
-    val report = SpinalVerilog{
-
+    val report = SpinalConfig().addStandardMemBlackboxing(blackboxAllWhatsYouCan).generateVerilog{
       //CPU configuration
       val cpuConfig = VexRiscvConfig(
         plugins = List(

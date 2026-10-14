@@ -131,9 +131,11 @@ module VexRiscvAxi4Linux (
   wire                dataCache_1_io_cpu_flush_valid;
   wire                dataCache_1_io_cpu_flush_payload_singleLine;
   wire       [5:0]    dataCache_1_io_cpu_flush_payload_lineId;
+  wire                RegFilePlugin_regFile_wr_en;
+  wire                RegFilePlugin_regFile_rd_en;
+  wire                RegFilePlugin_regFile_1_wr_en;
+  wire                RegFilePlugin_regFile_1_rd_en;
   reg        [54:0]   IBusCachedPlugin_predictor_history_spinal_port1;
-  reg        [31:0]   RegFilePlugin_regFile_spinal_port0;
-  reg        [31:0]   RegFilePlugin_regFile_spinal_port1;
   wire                IBusCachedPlugin_cache_io_cpu_prefetch_haltIt;
   wire       [31:0]   IBusCachedPlugin_cache_io_cpu_fetch_data;
   wire       [31:0]   IBusCachedPlugin_cache_io_cpu_fetch_physicalAddress;
@@ -168,6 +170,8 @@ module VexRiscvAxi4Linux (
   wire       [3:0]    dataCache_1_io_mem_cmd_payload_mask;
   wire       [2:0]    dataCache_1_io_mem_cmd_payload_size;
   wire                dataCache_1_io_mem_cmd_payload_last;
+  wire       [31:0]   RegFilePlugin_regFile_rd_data;
+  wire       [31:0]   RegFilePlugin_regFile_1_rd_data;
   wire       [51:0]   _zz_memory_MUL_LOW;
   wire       [51:0]   _zz_memory_MUL_LOW_1;
   wire       [51:0]   _zz_memory_MUL_LOW_2;
@@ -460,10 +464,6 @@ module VexRiscvAxi4Linux (
   wire       [0:0]    _zz__zz_decode_IS_CSR_166;
   wire       [0:0]    _zz__zz_decode_IS_CSR_167;
   wire                _zz__zz_decode_IS_CSR_168;
-  wire                _zz_RegFilePlugin_regFile_port;
-  wire                _zz_decode_RegFilePlugin_rs1Data;
-  wire                _zz_RegFilePlugin_regFile_port_1;
-  wire                _zz_decode_RegFilePlugin_rs2Data;
   wire       [0:0]    _zz__zz_execute_REGFILE_WRITE_DATA;
   wire       [2:0]    _zz__zz_execute_SRC1;
   wire       [4:0]    _zz__zz_execute_SRC1_1;
@@ -666,7 +666,7 @@ module VexRiscvAxi4Linux (
   wire       [1:0]    _zz_execute_ALU_BITWISE_CTRL;
   wire       [31:0]   _zz_lastStageRegFileWrite_payload_address;
   wire                _zz_lastStageRegFileWrite_valid;
-  reg                 _zz_1;
+  reg                 _zz_wr_en;
   wire       [31:0]   decode_INSTRUCTION_ANTICIPATED;
   reg                 decode_REGFILE_WRITE_VALID;
   wire                decode_LEGAL_INSTRUCTION;
@@ -716,7 +716,7 @@ module VexRiscvAxi4Linux (
   wire       [1:0]    memory_PREDICTION_CONTEXT_line_branchWish;
   wire                memory_PREDICTION_CONTEXT_line_last2Bytes;
   wire       [31:0]   memory_PREDICTION_CONTEXT_line_target;
-  reg                 _zz_2;
+  reg                 _zz_1;
   reg        [31:0]   _zz_execute_to_memory_FORMAL_PC_NEXT;
   reg        [31:0]   _zz_memory_to_writeBack_FORMAL_PC_NEXT;
   wire       [31:0]   decode_PC;
@@ -1440,7 +1440,8 @@ module VexRiscvAxi4Linux (
   reg                 lastStageRegFileWrite_valid /* verilator public */ ;
   reg        [4:0]    lastStageRegFileWrite_payload_address /* verilator public */ ;
   reg        [31:0]   lastStageRegFileWrite_payload_data /* verilator public */ ;
-  reg                 _zz_8;
+  wire       [31:0]   _zz_wr_data;
+  reg                 _zz_4;
   reg        [31:0]   execute_IntAluPlugin_bitwise;
   reg        [31:0]   _zz_execute_REGFILE_WRITE_DATA;
   reg        [31:0]   _zz_execute_SRC1;
@@ -2072,7 +2073,7 @@ module VexRiscvAxi4Linux (
   wire                when_Stream_l1253_1;
   wire                dBusToAxi4Shared_cmdFork_fire;
   wire                dBusToAxi4Shared_dataFork_fire;
-  reg                 _zz_9;
+  reg                 _zz_5;
   reg                 dBusToAxi4Shared_cmdStage_valid;
   wire                dBusToAxi4Shared_cmdStage_ready;
   wire                dBusToAxi4Shared_cmdStage_payload_wr;
@@ -2179,7 +2180,6 @@ module VexRiscvAxi4Linux (
   `endif
 
   reg [54:0] IBusCachedPlugin_predictor_history [0:1023];
-  reg [31:0] RegFilePlugin_regFile [0:31] /* verilator public */ ;
 
   assign _zz_when = (|{decodeExceptionPort_valid,IBusCachedPlugin_decodeExceptionPort_valid});
   assign _zz_memory_MUL_LOW = ($signed(_zz_memory_MUL_LOW_1) + $signed(_zz_memory_MUL_LOW_4));
@@ -2265,8 +2265,6 @@ module VexRiscvAxi4Linux (
   assign _zz__zz_CsrPlugin_exceptionPortCtrl_exceptionContext_code_1_1 = (_zz_CsrPlugin_exceptionPortCtrl_exceptionContext_code - 2'b01);
   assign _zz_dbus_axi_arw_payload_len = ((dBusToAxi4Shared_cmdStage_payload_size == 3'b110) ? 4'b1111 : 4'b0000);
   assign _zz_IBusCachedPlugin_predictor_history_port = {IBusCachedPlugin_predictor_historyWriteDelayPatched_payload_data_target,{IBusCachedPlugin_predictor_historyWriteDelayPatched_payload_data_last2Bytes,{IBusCachedPlugin_predictor_historyWriteDelayPatched_payload_data_branchWish,IBusCachedPlugin_predictor_historyWriteDelayPatched_payload_data_source}}};
-  assign _zz_decode_RegFilePlugin_rs1Data = 1'b1;
-  assign _zz_decode_RegFilePlugin_rs2Data = 1'b1;
   assign _zz_IBusCachedPlugin_jump_pcLoad_payload_6 = {_zz_IBusCachedPlugin_jump_pcLoad_payload_4,_zz_IBusCachedPlugin_jump_pcLoad_payload_3};
   assign _zz_writeBack_DBusCachedPlugin_rspShifted_1 = dataCache_1_io_cpu_writeBack_address[1 : 0];
   assign _zz_writeBack_DBusCachedPlugin_rspShifted_3 = dataCache_1_io_cpu_writeBack_address[1 : 1];
@@ -2504,7 +2502,7 @@ module VexRiscvAxi4Linux (
     $readmemb("VexRiscvAxi4Linux.v_toplevel_IBusCachedPlugin_predictor_history.bin",IBusCachedPlugin_predictor_history);
   end
   always @(posedge clk) begin
-    if(_zz_2) begin
+    if(_zz_1) begin
       IBusCachedPlugin_predictor_history[IBusCachedPlugin_predictor_historyWriteDelayPatched_payload_address] <= _zz_IBusCachedPlugin_predictor_history_port;
     end
   end
@@ -2512,24 +2510,6 @@ module VexRiscvAxi4Linux (
   always @(posedge clk) begin
     if(IBusCachedPlugin_iBusRsp_stages_0_output_ready) begin
       IBusCachedPlugin_predictor_history_spinal_port1 <= IBusCachedPlugin_predictor_history[_zz__zz_IBusCachedPlugin_predictor_buffer_line_source_1];
-    end
-  end
-
-  always @(posedge clk) begin
-    if(_zz_decode_RegFilePlugin_rs1Data) begin
-      RegFilePlugin_regFile_spinal_port0 <= RegFilePlugin_regFile[decode_RegFilePlugin_regFileReadAddress1];
-    end
-  end
-
-  always @(posedge clk) begin
-    if(_zz_decode_RegFilePlugin_rs2Data) begin
-      RegFilePlugin_regFile_spinal_port1 <= RegFilePlugin_regFile[decode_RegFilePlugin_regFileReadAddress2];
-    end
-  end
-
-  always @(posedge clk) begin
-    if(_zz_1) begin
-      RegFilePlugin_regFile[lastStageRegFileWrite_payload_address] <= lastStageRegFileWrite_payload_data;
     end
   end
 
@@ -2660,6 +2640,56 @@ module VexRiscvAxi4Linux (
     .io_mem_rsp_payload_error               (dBus_rsp_payload_error                           ), //i
     .clk                                    (clk                                              ), //i
     .reset                                  (reset                                            )  //i
+  );
+  Ram_1w_1rs #(
+    .wordCount      (32        ),
+    .wordWidth      (32        ),
+    .clockCrossing  (1'b0      ),
+    .technology     ("auto"    ),
+    .readUnderWrite ("dontCare"),
+    .wrAddressWidth (5         ),
+    .wrDataWidth    (32        ),
+    .wrMaskWidth    (1         ),
+    .wrMaskEnable   (1'b0      ),
+    .rdAddressWidth (5         ),
+    .rdDataWidth    (32        ),
+    .rdLatency      (1         )
+  ) RegFilePlugin_regFile (
+    .wr_clk    (clk                                          ), //i
+    .wr_en     (RegFilePlugin_regFile_wr_en                  ), //i
+    .wr_mask   (1'b1                                         ), //i
+    .wr_addr   (lastStageRegFileWrite_payload_address[4:0]   ), //i
+    .wr_data   (_zz_wr_data[31:0]                            ), //i
+    .rd_clk    (clk                                          ), //i
+    .rd_en     (RegFilePlugin_regFile_rd_en                  ), //i
+    .rd_addr   (decode_RegFilePlugin_regFileReadAddress1[4:0]), //i
+    .rd_dataEn (1'b1                                         ), //i
+    .rd_data   (RegFilePlugin_regFile_rd_data[31:0]          )  //o
+  );
+  Ram_1w_1rs #(
+    .wordCount      (32        ),
+    .wordWidth      (32        ),
+    .clockCrossing  (1'b0      ),
+    .technology     ("auto"    ),
+    .readUnderWrite ("dontCare"),
+    .wrAddressWidth (5         ),
+    .wrDataWidth    (32        ),
+    .wrMaskWidth    (1         ),
+    .wrMaskEnable   (1'b0      ),
+    .rdAddressWidth (5         ),
+    .rdDataWidth    (32        ),
+    .rdLatency      (1         )
+  ) RegFilePlugin_regFile_1 (
+    .wr_clk    (clk                                          ), //i
+    .wr_en     (RegFilePlugin_regFile_1_wr_en                ), //i
+    .wr_mask   (1'b1                                         ), //i
+    .wr_addr   (lastStageRegFileWrite_payload_address[4:0]   ), //i
+    .wr_data   (_zz_wr_data[31:0]                            ), //i
+    .rd_clk    (clk                                          ), //i
+    .rd_en     (RegFilePlugin_regFile_1_rd_en                ), //i
+    .rd_addr   (decode_RegFilePlugin_regFileReadAddress2[4:0]), //i
+    .rd_dataEn (1'b1                                         ), //i
+    .rd_data   (RegFilePlugin_regFile_1_rd_data[31:0]        )  //o
   );
   always @(*) begin
     case(_zz_IBusCachedPlugin_jump_pcLoad_payload_6)
@@ -3726,9 +3756,9 @@ module VexRiscvAxi4Linux (
   assign _zz_lastStageRegFileWrite_payload_address = writeBack_INSTRUCTION;
   assign _zz_lastStageRegFileWrite_valid = writeBack_REGFILE_WRITE_VALID;
   always @(*) begin
-    _zz_1 = 1'b0;
+    _zz_wr_en = 1'b0;
     if(lastStageRegFileWrite_valid) begin
-      _zz_1 = 1'b1;
+      _zz_wr_en = 1'b1;
     end
   end
 
@@ -3836,9 +3866,9 @@ module VexRiscvAxi4Linux (
   assign memory_PREDICTION_CONTEXT_line_last2Bytes = execute_to_memory_PREDICTION_CONTEXT_line_last2Bytes;
   assign memory_PREDICTION_CONTEXT_line_target = execute_to_memory_PREDICTION_CONTEXT_line_target;
   always @(*) begin
-    _zz_2 = 1'b0;
+    _zz_1 = 1'b0;
     if(IBusCachedPlugin_predictor_historyWriteDelayPatched_valid) begin
-      _zz_2 = 1'b1;
+      _zz_1 = 1'b1;
     end
   end
 
@@ -5395,25 +5425,26 @@ module VexRiscvAxi4Linux (
   assign when_RegFilePlugin_l63 = (decode_INSTRUCTION[11 : 7] == 5'h0);
   assign decode_RegFilePlugin_regFileReadAddress1 = decode_INSTRUCTION_ANTICIPATED[19 : 15];
   assign decode_RegFilePlugin_regFileReadAddress2 = decode_INSTRUCTION_ANTICIPATED[24 : 20];
-  assign decode_RegFilePlugin_rs1Data = RegFilePlugin_regFile_spinal_port0;
-  assign decode_RegFilePlugin_rs2Data = RegFilePlugin_regFile_spinal_port1;
+  assign decode_RegFilePlugin_rs1Data = RegFilePlugin_regFile_rd_data;
+  assign decode_RegFilePlugin_rs2Data = RegFilePlugin_regFile_1_rd_data;
+  assign _zz_wr_data = lastStageRegFileWrite_payload_data;
   always @(*) begin
     lastStageRegFileWrite_valid = (_zz_lastStageRegFileWrite_valid && writeBack_arbitration_isFiring);
-    if(_zz_8) begin
+    if(_zz_4) begin
       lastStageRegFileWrite_valid = 1'b1;
     end
   end
 
   always @(*) begin
     lastStageRegFileWrite_payload_address = _zz_lastStageRegFileWrite_payload_address[11 : 7];
-    if(_zz_8) begin
+    if(_zz_4) begin
       lastStageRegFileWrite_payload_address = 5'h0;
     end
   end
 
   always @(*) begin
     lastStageRegFileWrite_payload_data = _zz_decode_RS2_2;
-    if(_zz_8) begin
+    if(_zz_4) begin
       lastStageRegFileWrite_payload_data = 32'h0;
     end
   end
@@ -6982,14 +7013,14 @@ module VexRiscvAxi4Linux (
   assign dBusToAxi4Shared_dataFork_fire = (dBusToAxi4Shared_dataFork_valid && dBusToAxi4Shared_dataFork_ready);
   always @(*) begin
     dBusToAxi4Shared_cmdStage_valid = dBusToAxi4Shared_cmdFork_valid;
-    if(_zz_9) begin
+    if(_zz_5) begin
       dBusToAxi4Shared_cmdStage_valid = 1'b0;
     end
   end
 
   always @(*) begin
     dBusToAxi4Shared_cmdFork_ready = dBusToAxi4Shared_cmdStage_ready;
-    if(_zz_9) begin
+    if(_zz_5) begin
       dBusToAxi4Shared_cmdFork_ready = 1'b1;
     end
   end
@@ -7086,6 +7117,10 @@ module VexRiscvAxi4Linux (
   assign csr_externalInterrupt = meip;
   assign csr_externalInterruptS = seip;
   assign csr_utime = mtime;
+  assign RegFilePlugin_regFile_wr_en = (_zz_wr_en && 1'b1);
+  assign RegFilePlugin_regFile_rd_en = (1'b1 && 1'b1);
+  assign RegFilePlugin_regFile_1_wr_en = (_zz_wr_en && 1'b1);
+  assign RegFilePlugin_regFile_1_rd_en = (1'b1 && 1'b1);
   always @(posedge clk or posedge reset) begin
     if(reset) begin
       IBusCachedPlugin_fetchPc_pcReg <= externalResetVector;
@@ -7122,7 +7157,7 @@ module VexRiscvAxi4Linux (
       MmuPlugin_ports_1_entryToReplace_value <= 2'b00;
       MmuPlugin_shared_state_1 <= MmuPlugin_shared_State_IDLE;
       MmuPlugin_shared_dBusRspStaged_valid <= 1'b0;
-      _zz_8 <= 1'b1;
+      _zz_4 <= 1'b1;
       memory_DivPlugin_div_counter_value <= 6'h0;
       HazardSimplePlugin_writeBackBuffer_valid <= 1'b0;
       _zz_CsrPlugin_privilege <= 2'b11;
@@ -7185,7 +7220,7 @@ module VexRiscvAxi4Linux (
       dBusToAxi4Shared_pendingWrites_value <= 3'b000;
       dBus_cmd_haltWhen_fork2_logic_linkEnable_0 <= 1'b1;
       dBus_cmd_haltWhen_fork2_logic_linkEnable_1 <= 1'b1;
-      _zz_9 <= 1'b0;
+      _zz_5 <= 1'b0;
     end else begin
       if(IBusCachedPlugin_fetchPc_correction) begin
         IBusCachedPlugin_fetchPc_correctionReg <= 1'b1;
@@ -7400,7 +7435,7 @@ module VexRiscvAxi4Linux (
         MmuPlugin_ports_1_cache_2_valid <= 1'b0;
         MmuPlugin_ports_1_cache_3_valid <= 1'b0;
       end
-      _zz_8 <= 1'b0;
+      _zz_4 <= 1'b0;
       memory_DivPlugin_div_counter_value <= memory_DivPlugin_div_counter_valueNext;
       HazardSimplePlugin_writeBackBuffer_valid <= HazardSimplePlugin_writeBackWrites_valid;
       CsrPlugin_mcycle <= (CsrPlugin_mcycle + 64'h0000000000000001);
@@ -7702,7 +7737,7 @@ module VexRiscvAxi4Linux (
         dBus_cmd_haltWhen_fork2_logic_linkEnable_1 <= 1'b1;
       end
       if(dBusToAxi4Shared_cmdFork_fire) begin
-        _zz_9 <= (! dBusToAxi4Shared_cmdFork_payload_last);
+        _zz_5 <= (! dBusToAxi4Shared_cmdFork_payload_last);
       end
     end
   end
@@ -8503,9 +8538,13 @@ module DataCache (
   input  wire          reset
 );
 
-  reg        [21:0]   ways_0_tags_spinal_port0;
-  reg        [31:0]   ways_0_data_spinal_port0;
-  wire       [21:0]   _zz_ways_0_tags_port;
+  wire                ways_0_tags_wr_en;
+  wire       [21:0]   ways_0_tags_wr_data;
+  wire                ways_0_tags_rd_en;
+  wire                ways_0_data_wr_en;
+  wire                ways_0_data_rd_en;
+  wire       [21:0]   ways_0_tags_rd_data;
+  wire       [31:0]   ways_0_data_rd_data;
   wire       [31:0]   _zz_stageB_amo_addSub;
   wire       [31:0]   _zz_stageB_amo_addSub_1;
   wire       [31:0]   _zz_stageB_amo_addSub_2;
@@ -8516,8 +8555,8 @@ module DataCache (
   wire       [3:0]    _zz_loader_counter_valueNext;
   wire       [0:0]    _zz_loader_counter_valueNext_1;
   wire       [1:0]    _zz_loader_waysAllocator;
-  reg                 _zz_1;
-  reg                 _zz_2;
+  reg                 _zz_wr_en;
+  reg                 _zz_wr_en_1;
   wire                haltCpu;
   reg                 tagsReadCmd_valid;
   reg        [5:0]    tagsReadCmd_payload;
@@ -8540,12 +8579,10 @@ module DataCache (
   reg        [9:0]    dataWriteCmd_payload_address;
   reg        [31:0]   dataWriteCmd_payload_data;
   reg        [3:0]    dataWriteCmd_payload_mask;
-  wire                _zz_ways_0_tagsReadRsp_valid;
   wire                ways_0_tagsReadRsp_valid;
   wire                ways_0_tagsReadRsp_error;
   wire       [19:0]   ways_0_tagsReadRsp_address;
-  wire       [21:0]   _zz_ways_0_tagsReadRsp_valid_1;
-  wire                _zz_ways_0_dataReadRspMem;
+  wire       [21:0]   _zz_ways_0_tagsReadRsp_valid;
   wire       [31:0]   ways_0_dataReadRspMem;
   wire       [31:0]   ways_0_dataReadRsp;
   wire                when_DataCache_l645;
@@ -8681,15 +8718,6 @@ module DataCache (
   reg                 loader_valid_regNext;
   wire                when_DataCache_l1129;
   wire                when_DataCache_l1132;
-  reg [21:0] ways_0_tags [0:63];
-  reg [7:0] ways_0_data_symbol0 [0:1023];
-  reg [7:0] ways_0_data_symbol1 [0:1023];
-  reg [7:0] ways_0_data_symbol2 [0:1023];
-  reg [7:0] ways_0_data_symbol3 [0:1023];
-  reg [7:0] _zz_ways_0_datasymbol_read;
-  reg [7:0] _zz_ways_0_datasymbol_read_1;
-  reg [7:0] _zz_ways_0_datasymbol_read_2;
-  reg [7:0] _zz_ways_0_datasymbol_read_3;
 
   assign _zz_stageB_amo_addSub = ($signed(_zz_stageB_amo_addSub_1) + $signed(_zz_stageB_amo_addSub_4));
   assign _zz_stageB_amo_addSub_1 = ($signed(_zz_stageB_amo_addSub_2) + $signed(_zz_stageB_amo_addSub_3));
@@ -8701,68 +8729,76 @@ module DataCache (
   assign _zz_loader_counter_valueNext_1 = loader_counter_willIncrement;
   assign _zz_loader_counter_valueNext = {3'd0, _zz_loader_counter_valueNext_1};
   assign _zz_loader_waysAllocator = {loader_waysAllocator,loader_waysAllocator[0]};
-  assign _zz_ways_0_tags_port = {tagsWriteCmd_payload_data_address,{tagsWriteCmd_payload_data_error,tagsWriteCmd_payload_data_valid}};
-  always @(posedge clk) begin
-    if(_zz_ways_0_tagsReadRsp_valid) begin
-      ways_0_tags_spinal_port0 <= ways_0_tags[tagsReadCmd_payload];
-    end
-  end
-
-  always @(posedge clk) begin
-    if(_zz_2) begin
-      ways_0_tags[tagsWriteCmd_payload_address] <= _zz_ways_0_tags_port;
-    end
-  end
-
+  Ram_1w_1rs #(
+    .wordCount      (64        ),
+    .wordWidth      (22        ),
+    .clockCrossing  (1'b0      ),
+    .technology     ("auto"    ),
+    .readUnderWrite ("dontCare"),
+    .wrAddressWidth (6         ),
+    .wrDataWidth    (22        ),
+    .wrMaskWidth    (1         ),
+    .wrMaskEnable   (1'b0      ),
+    .rdAddressWidth (6         ),
+    .rdDataWidth    (22        ),
+    .rdLatency      (1         )
+  ) ways_0_tags (
+    .wr_clk    (clk                              ), //i
+    .wr_en     (ways_0_tags_wr_en                ), //i
+    .wr_mask   (1'b1                             ), //i
+    .wr_addr   (tagsWriteCmd_payload_address[5:0]), //i
+    .wr_data   (ways_0_tags_wr_data[21:0]        ), //i
+    .rd_clk    (clk                              ), //i
+    .rd_en     (ways_0_tags_rd_en                ), //i
+    .rd_addr   (tagsReadCmd_payload[5:0]         ), //i
+    .rd_dataEn (1'b1                             ), //i
+    .rd_data   (ways_0_tags_rd_data[21:0]        )  //o
+  );
+  Ram_1w_1rs #(
+    .wordCount      (1024      ),
+    .wordWidth      (32        ),
+    .clockCrossing  (1'b0      ),
+    .technology     ("auto"    ),
+    .readUnderWrite ("dontCare"),
+    .wrAddressWidth (10        ),
+    .wrDataWidth    (32        ),
+    .wrMaskWidth    (4         ),
+    .wrMaskEnable   (1'b1      ),
+    .rdAddressWidth (10        ),
+    .rdDataWidth    (32        ),
+    .rdLatency      (1         )
+  ) ways_0_data (
+    .wr_clk    (clk                              ), //i
+    .wr_en     (ways_0_data_wr_en                ), //i
+    .wr_mask   (dataWriteCmd_payload_mask[3:0]   ), //i
+    .wr_addr   (dataWriteCmd_payload_address[9:0]), //i
+    .wr_data   (dataWriteCmd_payload_data[31:0]  ), //i
+    .rd_clk    (clk                              ), //i
+    .rd_en     (ways_0_data_rd_en                ), //i
+    .rd_addr   (dataReadCmd_payload[9:0]         ), //i
+    .rd_dataEn (1'b1                             ), //i
+    .rd_data   (ways_0_data_rd_data[31:0]        )  //o
+  );
   always @(*) begin
-    ways_0_data_spinal_port0 = {_zz_ways_0_datasymbol_read_3, _zz_ways_0_datasymbol_read_2, _zz_ways_0_datasymbol_read_1, _zz_ways_0_datasymbol_read};
-  end
-  always @(posedge clk) begin
-    if(_zz_ways_0_dataReadRspMem) begin
-      _zz_ways_0_datasymbol_read <= ways_0_data_symbol0[dataReadCmd_payload];
-      _zz_ways_0_datasymbol_read_1 <= ways_0_data_symbol1[dataReadCmd_payload];
-      _zz_ways_0_datasymbol_read_2 <= ways_0_data_symbol2[dataReadCmd_payload];
-      _zz_ways_0_datasymbol_read_3 <= ways_0_data_symbol3[dataReadCmd_payload];
-    end
-  end
-
-  always @(posedge clk) begin
-    if(dataWriteCmd_payload_mask[0] && _zz_1) begin
-      ways_0_data_symbol0[dataWriteCmd_payload_address] <= dataWriteCmd_payload_data[7 : 0];
-    end
-    if(dataWriteCmd_payload_mask[1] && _zz_1) begin
-      ways_0_data_symbol1[dataWriteCmd_payload_address] <= dataWriteCmd_payload_data[15 : 8];
-    end
-    if(dataWriteCmd_payload_mask[2] && _zz_1) begin
-      ways_0_data_symbol2[dataWriteCmd_payload_address] <= dataWriteCmd_payload_data[23 : 16];
-    end
-    if(dataWriteCmd_payload_mask[3] && _zz_1) begin
-      ways_0_data_symbol3[dataWriteCmd_payload_address] <= dataWriteCmd_payload_data[31 : 24];
-    end
-  end
-
-  always @(*) begin
-    _zz_1 = 1'b0;
+    _zz_wr_en = 1'b0;
     if(when_DataCache_l648) begin
-      _zz_1 = 1'b1;
+      _zz_wr_en = 1'b1;
     end
   end
 
   always @(*) begin
-    _zz_2 = 1'b0;
+    _zz_wr_en_1 = 1'b0;
     if(when_DataCache_l645) begin
-      _zz_2 = 1'b1;
+      _zz_wr_en_1 = 1'b1;
     end
   end
 
   assign haltCpu = 1'b0;
-  assign _zz_ways_0_tagsReadRsp_valid = (tagsReadCmd_valid && (! io_cpu_memory_isStuck));
-  assign _zz_ways_0_tagsReadRsp_valid_1 = ways_0_tags_spinal_port0;
-  assign ways_0_tagsReadRsp_valid = _zz_ways_0_tagsReadRsp_valid_1[0];
-  assign ways_0_tagsReadRsp_error = _zz_ways_0_tagsReadRsp_valid_1[1];
-  assign ways_0_tagsReadRsp_address = _zz_ways_0_tagsReadRsp_valid_1[21 : 2];
-  assign _zz_ways_0_dataReadRspMem = (dataReadCmd_valid && (! io_cpu_memory_isStuck));
-  assign ways_0_dataReadRspMem = ways_0_data_spinal_port0;
+  assign _zz_ways_0_tagsReadRsp_valid = ways_0_tags_rd_data;
+  assign ways_0_tagsReadRsp_valid = _zz_ways_0_tagsReadRsp_valid[0];
+  assign ways_0_tagsReadRsp_error = _zz_ways_0_tagsReadRsp_valid[1];
+  assign ways_0_tagsReadRsp_address = _zz_ways_0_tagsReadRsp_valid[21 : 2];
+  assign ways_0_dataReadRspMem = ways_0_data_rd_data;
   assign ways_0_dataReadRsp = ways_0_dataReadRspMem[31 : 0];
   assign when_DataCache_l645 = (tagsWriteCmd_valid && tagsWriteCmd_payload_way[0]);
   assign when_DataCache_l648 = (dataWriteCmd_valid && dataWriteCmd_payload_way[0]);
@@ -9267,6 +9303,11 @@ module DataCache (
   assign when_DataCache_l1129 = (loader_valid && (! loader_valid_regNext));
   assign io_cpu_execute_refilling = loader_valid;
   assign when_DataCache_l1132 = (stageB_loaderValid || loader_valid);
+  assign ways_0_tags_wr_en = (_zz_wr_en_1 && 1'b1);
+  assign ways_0_tags_wr_data = {tagsWriteCmd_payload_data_address,{tagsWriteCmd_payload_data_error,tagsWriteCmd_payload_data_valid}};
+  assign ways_0_tags_rd_en = ((tagsReadCmd_valid && (! io_cpu_memory_isStuck)) && 1'b1);
+  assign ways_0_data_wr_en = (_zz_wr_en && 1'b1);
+  assign ways_0_data_rd_en = ((dataReadCmd_valid && (! io_cpu_memory_isStuck)) && 1'b1);
   always @(posedge clk) begin
     tagsWriteLastCmd_valid <= tagsWriteCmd_valid;
     tagsWriteLastCmd_payload_way <= tagsWriteCmd_payload_way;
@@ -9483,11 +9524,17 @@ module InstructionCache (
   input  wire          reset
 );
 
-  reg        [31:0]   banks_0_spinal_port1;
-  reg        [21:0]   ways_0_tags_spinal_port1;
-  wire       [21:0]   _zz_ways_0_tags_port;
-  reg                 _zz_1;
-  reg                 _zz_2;
+  wire                banks_0_wr_en;
+  wire                banks_0_rd_en;
+  wire       [9:0]    banks_0_rd_addr;
+  wire                ways_0_tags_wr_en;
+  wire       [21:0]   ways_0_tags_wr_data;
+  wire                ways_0_tags_rd_en;
+  wire       [5:0]    ways_0_tags_rd_addr;
+  wire       [31:0]   banks_0_rd_data;
+  wire       [21:0]   ways_0_tags_rd_data;
+  reg                 _zz_wr_en;
+  reg                 _zz_wr_en_1;
   reg                 lineLoader_fire;
   reg                 lineLoader_valid;
   (* keep , syn_keep *) reg        [31:0]   lineLoader_address /* synthesis syn_keep = 1 */ ;
@@ -9515,16 +9562,12 @@ module InstructionCache (
   wire       [9:0]    lineLoader_write_data_0_payload_address;
   wire       [31:0]   lineLoader_write_data_0_payload_data;
   wire                when_InstructionCache_l402;
-  wire       [9:0]    _zz_fetchStage_read_banksValue_0_dataMem;
-  wire                _zz_fetchStage_read_banksValue_0_dataMem_1;
   wire       [31:0]   fetchStage_read_banksValue_0_dataMem;
   wire       [31:0]   fetchStage_read_banksValue_0_data;
-  wire       [5:0]    _zz_fetchStage_read_waysValues_0_tag_valid;
-  wire                _zz_fetchStage_read_waysValues_0_tag_valid_1;
   wire                fetchStage_read_waysValues_0_tag_valid;
   wire                fetchStage_read_waysValues_0_tag_error;
   wire       [19:0]   fetchStage_read_waysValues_0_tag_address;
-  wire       [21:0]   _zz_fetchStage_read_waysValues_0_tag_valid_2;
+  wire       [21:0]   _zz_fetchStage_read_waysValues_0_tag_valid;
   wire                when_InstructionCache_l460;
   reg        [31:0]   decodeStage_mmuRsp_physicalAddress;
   reg                 decodeStage_mmuRsp_isIoAccess;
@@ -9552,45 +9595,68 @@ module InstructionCache (
   wire                when_InstructionCache_l460_2;
   reg        [31:0]   _zz_decodeStage_hit_data;
   wire       [31:0]   decodeStage_hit_data;
-  reg [31:0] banks_0 [0:1023];
-  reg [21:0] ways_0_tags [0:63];
 
-  assign _zz_ways_0_tags_port = {lineLoader_write_tag_0_payload_data_address,{lineLoader_write_tag_0_payload_data_error,lineLoader_write_tag_0_payload_data_valid}};
-  always @(posedge clk) begin
-    if(_zz_1) begin
-      banks_0[lineLoader_write_data_0_payload_address] <= lineLoader_write_data_0_payload_data;
-    end
-  end
-
-  always @(posedge clk) begin
-    if(_zz_fetchStage_read_banksValue_0_dataMem_1) begin
-      banks_0_spinal_port1 <= banks_0[_zz_fetchStage_read_banksValue_0_dataMem];
-    end
-  end
-
-  always @(posedge clk) begin
-    if(_zz_2) begin
-      ways_0_tags[lineLoader_write_tag_0_payload_address] <= _zz_ways_0_tags_port;
-    end
-  end
-
-  always @(posedge clk) begin
-    if(_zz_fetchStage_read_waysValues_0_tag_valid_1) begin
-      ways_0_tags_spinal_port1 <= ways_0_tags[_zz_fetchStage_read_waysValues_0_tag_valid];
-    end
-  end
-
+  Ram_1w_1rs #(
+    .wordCount      (1024      ),
+    .wordWidth      (32        ),
+    .clockCrossing  (1'b0      ),
+    .technology     ("auto"    ),
+    .readUnderWrite ("dontCare"),
+    .wrAddressWidth (10        ),
+    .wrDataWidth    (32        ),
+    .wrMaskWidth    (1         ),
+    .wrMaskEnable   (1'b0      ),
+    .rdAddressWidth (10        ),
+    .rdDataWidth    (32        ),
+    .rdLatency      (1         )
+  ) banks_0 (
+    .wr_clk    (clk                                         ), //i
+    .wr_en     (banks_0_wr_en                               ), //i
+    .wr_mask   (1'b1                                        ), //i
+    .wr_addr   (lineLoader_write_data_0_payload_address[9:0]), //i
+    .wr_data   (lineLoader_write_data_0_payload_data[31:0]  ), //i
+    .rd_clk    (clk                                         ), //i
+    .rd_en     (banks_0_rd_en                               ), //i
+    .rd_addr   (banks_0_rd_addr[9:0]                        ), //i
+    .rd_dataEn (1'b1                                        ), //i
+    .rd_data   (banks_0_rd_data[31:0]                       )  //o
+  );
+  Ram_1w_1rs #(
+    .wordCount      (64        ),
+    .wordWidth      (22        ),
+    .clockCrossing  (1'b0      ),
+    .technology     ("auto"    ),
+    .readUnderWrite ("dontCare"),
+    .wrAddressWidth (6         ),
+    .wrDataWidth    (22        ),
+    .wrMaskWidth    (1         ),
+    .wrMaskEnable   (1'b0      ),
+    .rdAddressWidth (6         ),
+    .rdDataWidth    (22        ),
+    .rdLatency      (1         )
+  ) ways_0_tags (
+    .wr_clk    (clk                                        ), //i
+    .wr_en     (ways_0_tags_wr_en                          ), //i
+    .wr_mask   (1'b1                                       ), //i
+    .wr_addr   (lineLoader_write_tag_0_payload_address[5:0]), //i
+    .wr_data   (ways_0_tags_wr_data[21:0]                  ), //i
+    .rd_clk    (clk                                        ), //i
+    .rd_en     (ways_0_tags_rd_en                          ), //i
+    .rd_addr   (ways_0_tags_rd_addr[5:0]                   ), //i
+    .rd_dataEn (1'b1                                       ), //i
+    .rd_data   (ways_0_tags_rd_data[21:0]                  )  //o
+  );
   always @(*) begin
-    _zz_1 = 1'b0;
+    _zz_wr_en = 1'b0;
     if(lineLoader_write_data_0_valid) begin
-      _zz_1 = 1'b1;
+      _zz_wr_en = 1'b1;
     end
   end
 
   always @(*) begin
-    _zz_2 = 1'b0;
+    _zz_wr_en_1 = 1'b0;
     if(lineLoader_write_tag_0_valid) begin
-      _zz_2 = 1'b1;
+      _zz_wr_en_1 = 1'b1;
     end
   end
 
@@ -9643,16 +9709,12 @@ module InstructionCache (
   assign lineLoader_write_data_0_payload_address = {lineLoader_address[11 : 6],lineLoader_wordIndex};
   assign lineLoader_write_data_0_payload_data = io_mem_rsp_payload_data;
   assign when_InstructionCache_l402 = (lineLoader_wordIndex == 4'b1111);
-  assign _zz_fetchStage_read_banksValue_0_dataMem = io_cpu_prefetch_pc[11 : 2];
-  assign _zz_fetchStage_read_banksValue_0_dataMem_1 = (! io_cpu_fetch_isStuck);
-  assign fetchStage_read_banksValue_0_dataMem = banks_0_spinal_port1;
+  assign fetchStage_read_banksValue_0_dataMem = banks_0_rd_data;
   assign fetchStage_read_banksValue_0_data = fetchStage_read_banksValue_0_dataMem[31 : 0];
-  assign _zz_fetchStage_read_waysValues_0_tag_valid = io_cpu_prefetch_pc[11 : 6];
-  assign _zz_fetchStage_read_waysValues_0_tag_valid_1 = (! io_cpu_fetch_isStuck);
-  assign _zz_fetchStage_read_waysValues_0_tag_valid_2 = ways_0_tags_spinal_port1;
-  assign fetchStage_read_waysValues_0_tag_valid = _zz_fetchStage_read_waysValues_0_tag_valid_2[0];
-  assign fetchStage_read_waysValues_0_tag_error = _zz_fetchStage_read_waysValues_0_tag_valid_2[1];
-  assign fetchStage_read_waysValues_0_tag_address = _zz_fetchStage_read_waysValues_0_tag_valid_2[21 : 2];
+  assign _zz_fetchStage_read_waysValues_0_tag_valid = ways_0_tags_rd_data;
+  assign fetchStage_read_waysValues_0_tag_valid = _zz_fetchStage_read_waysValues_0_tag_valid[0];
+  assign fetchStage_read_waysValues_0_tag_error = _zz_fetchStage_read_waysValues_0_tag_valid[1];
+  assign fetchStage_read_waysValues_0_tag_address = _zz_fetchStage_read_waysValues_0_tag_valid[21 : 2];
   assign io_cpu_fetch_data = fetchStage_read_banksValue_0_data;
   assign io_cpu_fetch_physicalAddress = io_cpu_fetch_mmuRsp_physicalAddress;
   assign when_InstructionCache_l460 = (! io_cpu_decode_isStuck);
@@ -9667,6 +9729,13 @@ module InstructionCache (
   assign io_cpu_decode_mmuRefilling = decodeStage_mmuRsp_refilling;
   assign io_cpu_decode_mmuException = (((! decodeStage_mmuRsp_refilling) && decodeStage_mmuRsp_isPaging) && (decodeStage_mmuRsp_exception || (! decodeStage_mmuRsp_allowExecute)));
   assign io_cpu_decode_physicalAddress = decodeStage_mmuRsp_physicalAddress;
+  assign banks_0_wr_en = (_zz_wr_en && 1'b1);
+  assign banks_0_rd_en = ((! io_cpu_fetch_isStuck) && 1'b1);
+  assign banks_0_rd_addr = io_cpu_prefetch_pc[11 : 2];
+  assign ways_0_tags_wr_en = (_zz_wr_en_1 && 1'b1);
+  assign ways_0_tags_wr_data = {lineLoader_write_tag_0_payload_data_address,{lineLoader_write_tag_0_payload_data_error,lineLoader_write_tag_0_payload_data_valid}};
+  assign ways_0_tags_rd_en = ((! io_cpu_fetch_isStuck) && 1'b1);
+  assign ways_0_tags_rd_addr = io_cpu_prefetch_pc[11 : 6];
   always @(posedge clk or posedge reset) begin
     if(reset) begin
       lineLoader_valid <= 1'b0;

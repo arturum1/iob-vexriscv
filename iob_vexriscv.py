@@ -15,7 +15,7 @@ def setup(py_params_dict):
     params = {
         "reset_addr": 0x00000000,
         "uncached_start_addr": 0x00000000,
-        "uncached_size": 2**32,
+        "uncached_size": 0xFFFFFFFF,
     }
 
     # Update params with values from py_params_dict
@@ -120,6 +120,12 @@ def setup(py_params_dict):
                 "signals": [
                     {"name": "mtime_i", "descr": "Input from external 64-bit counter for time CSRs", "width": "64"},
                 ],
+            },
+        ],
+        "subblocks": [
+            {
+                "core": "iob_ram_t2p_be",
+                "instantiate": False,
             },
         ],
         "wires": [
