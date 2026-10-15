@@ -61,8 +61,7 @@ module Ram_1w_1rs #(
       iob_ram_t2p_be #(
           .ADDR_W(ADDR_W),
           .DATA_W(wrDataWidth),
-          .MEM_ASIC(MEM_ASIC),
-          .SIMULATION(!MEM_ASIC)
+          .MEM_ASIC(MEM_ASIC)
       ) ram (
           .clk_i(wr_clk),
           .w_strb_i(wr_mask),
@@ -76,8 +75,7 @@ module Ram_1w_1rs #(
       iob_ram_t2p #(
           .ADDR_W(ADDR_W),
           .DATA_W(wrDataWidth),
-          .MEM_ASIC(MEM_ASIC),
-          .SIMULATION(!MEM_ASIC)
+          .MEM_ASIC(MEM_ASIC)
       ) ram (
           .clk_i(wr_clk),
           .w_en_i(wr_en),
