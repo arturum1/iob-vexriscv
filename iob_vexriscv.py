@@ -121,13 +121,68 @@ def setup(py_params_dict):
                     {"name": "mtime_i", "descr": "Input from external 64-bit counter for time CSRs", "width": "64"},
                 ],
             },
-        ],
-        "subblocks": [
             {
-                "core": "iob_ram_t2p_be",
-                "instantiate": False,
+                "name": "regfile_a_m",
+                "descr": "VexRiscv register file read port A",
+                "signals": {
+                    "type": "ram_t2p",
+                    "prefix": "regfile_a_",
+                    "ADDR_W": 5,
+                    "DATA_W": 32,
+                },
+            },
+            {
+                "name": "regfile_b_m",
+                "descr": "VexRiscv register file read port B",
+                "signals": {
+                    "type": "ram_t2p",
+                    "prefix": "regfile_b_",
+                    "ADDR_W": 5,
+                    "DATA_W": 32,
+                },
+            },
+            {
+                "name": "icache_data_m",
+                "descr": "VexRiscv instruction cache data memory",
+                "signals": {
+                    "type": "ram_t2p",
+                    "prefix": "icache_data_",
+                    "ADDR_W": 10,
+                    "DATA_W": 32,
+                },
+            },
+            {
+                "name": "icache_tags_m",
+                "descr": "VexRiscv instruction cache tag memory",
+                "signals": {
+                    "type": "ram_t2p",
+                    "prefix": "icache_tags_",
+                    "ADDR_W": 6,
+                    "DATA_W": 22,
+                },
+            },
+            {
+                "name": "dcache_data_m",
+                "descr": "VexRiscv data cache data memory",
+                "signals": {
+                    "type": "ram_t2p_be",
+                    "prefix": "dcache_data_",
+                    "ADDR_W": 10,
+                    "DATA_W": 32,
+                },
+            },
+            {
+                "name": "dcache_tags_m",
+                "descr": "VexRiscv data cache tag memory",
+                "signals": {
+                    "type": "ram_t2p",
+                    "prefix": "dcache_tags_",
+                    "ADDR_W": 6,
+                    "DATA_W": 22,
+                },
             },
         ],
+        "subblocks": [],
         "wires": [
             {
                 "name": "cpu_reset",
@@ -161,7 +216,7 @@ def setup(py_params_dict):
 
 
   // Instantiation of VexRiscv core
-  VexRiscvAxi4Linux CPU (
+  VexRiscvAxi4LinuxMemIf CPU (
       // Interrupt sources
       .msip(msip_i),
       .mtip(mtip_i),
@@ -235,6 +290,51 @@ def setup(py_params_dict):
       .dBusAxi_rid(dbus_axi_rid_i),
       .dBusAxi_rresp(dbus_axi_rresp_i),
       .dBusAxi_rlast(dbus_axi_rlast_i),
+      // Register file memories
+      .regfile_a_clk_o(regfile_a_clk_o),
+      .regfile_a_w_en_o(regfile_a_w_en_o),
+      .regfile_a_w_addr_o(regfile_a_w_addr_o),
+      .regfile_a_w_data_o(regfile_a_w_data_o),
+      .regfile_a_r_en_o(regfile_a_r_en_o),
+      .regfile_a_r_addr_o(regfile_a_r_addr_o),
+      .regfile_a_r_data_i(regfile_a_r_data_i),
+      .regfile_b_clk_o(regfile_b_clk_o),
+      .regfile_b_w_en_o(regfile_b_w_en_o),
+      .regfile_b_w_addr_o(regfile_b_w_addr_o),
+      .regfile_b_w_data_o(regfile_b_w_data_o),
+      .regfile_b_r_en_o(regfile_b_r_en_o),
+      .regfile_b_r_addr_o(regfile_b_r_addr_o),
+      .regfile_b_r_data_i(regfile_b_r_data_i),
+      // Instruction cache memories
+      .icache_data_clk_o(icache_data_clk_o),
+      .icache_data_w_en_o(icache_data_w_en_o),
+      .icache_data_w_addr_o(icache_data_w_addr_o),
+      .icache_data_w_data_o(icache_data_w_data_o),
+      .icache_data_r_en_o(icache_data_r_en_o),
+      .icache_data_r_addr_o(icache_data_r_addr_o),
+      .icache_data_r_data_i(icache_data_r_data_i),
+      .icache_tags_clk_o(icache_tags_clk_o),
+      .icache_tags_w_en_o(icache_tags_w_en_o),
+      .icache_tags_w_addr_o(icache_tags_w_addr_o),
+      .icache_tags_w_data_o(icache_tags_w_data_o),
+      .icache_tags_r_en_o(icache_tags_r_en_o),
+      .icache_tags_r_addr_o(icache_tags_r_addr_o),
+      .icache_tags_r_data_i(icache_tags_r_data_i),
+      // Data cache memories
+      .dcache_data_clk_o(dcache_data_clk_o),
+      .dcache_data_w_strb_o(dcache_data_w_strb_o),
+      .dcache_data_w_addr_o(dcache_data_w_addr_o),
+      .dcache_data_w_data_o(dcache_data_w_data_o),
+      .dcache_data_r_en_o(dcache_data_r_en_o),
+      .dcache_data_r_addr_o(dcache_data_r_addr_o),
+      .dcache_data_r_data_i(dcache_data_r_data_i),
+      .dcache_tags_clk_o(dcache_tags_clk_o),
+      .dcache_tags_w_en_o(dcache_tags_w_en_o),
+      .dcache_tags_w_addr_o(dcache_tags_w_addr_o),
+      .dcache_tags_w_data_o(dcache_tags_w_data_o),
+      .dcache_tags_r_en_o(dcache_tags_r_en_o),
+      .dcache_tags_r_addr_o(dcache_tags_r_addr_o),
+      .dcache_tags_r_data_i(dcache_tags_r_data_i),
       // Clock and Reset
       .clk(clk_i),
       .reset(cpu_reset)
@@ -275,7 +375,7 @@ def setup(py_params_dict):
         ],
     }
 
-    # Disable linter for `VexRiscvAxi4Linux.v` source.
+    # Disable linter for `VexRiscvAxi4LinuxMemIf.v` source.
     if py_params_dict.get("py2hwsw_target", "") == "setup":
         build_dir = py_params_dict.get("build_dir")
         os.makedirs(f"{build_dir}/hardware/lint/verilator", exist_ok=True)
@@ -283,7 +383,7 @@ def setup(py_params_dict):
             file.write(
                 f"""
 // Lines generated by {os.path.basename(__file__)}
-lint_off -file "*/VexRiscvAxi4Linux.v"
+lint_off -file "*/VexRiscvAxi4LinuxMemIf.v"
 """
             )
         # Copy CPU memory initialization binaries to build directory

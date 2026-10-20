@@ -6,6 +6,7 @@
 VEXRISCV_DIR ?= $(shell pwd)
 VEX_HARDWARE_DIR:=$(VEXRISCV_DIR)/hardware
 VEXRISCV_SRC_DIR:=$(VEX_HARDWARE_DIR)/src
+VEXRISCV_GEN_DIR:=$(VEX_HARDWARE_DIR)/vexriscv_gen
 VEX_SUBMODULES_DIR:=$(VEXRISCV_DIR)/submodules
 
 # Rules
@@ -40,13 +41,16 @@ vexriscv:
 	cp $(VEX_HARDWARE_DIR)/vexriscv_core/DBusCachedPlugin.scala $(VEX_SUBMODULES_DIR)/VexRiscv/src/main/scala/vexriscv/plugin/
 	cd submodules/VexRiscv && \
 	sbt -java-home $(JDK_HOME) "runMain vexriscv.demo.$(CPU) $(SPINALHDL_ARGS)" && \
-	cp $(CPU).v $(VEXRISCV_SRC_DIR)/$(CPU).v && \
-	cp $(CPU).v_*.bin $(VEX_HARDWARE_DIR)/init_mems
+	mkdir -p $(VEXRISCV_GEN_DIR) && \
+	cp $(CPU).v $(VEXRISCV_GEN_DIR)/$(CPU).v && \
+	cp $(CPU).v_*.bin $(VEX_HARDWARE_DIR)/init_mems && \
+	python3 $(VEX_HARDWARE_DIR)/scripts/gen_memif.py $(VEXRISCV_GEN_DIR)/$(CPU).v $(VEXRISCV_SRC_DIR)/$(CPU)MemIf.v
 
 #
 # Clean
 #
 clean-vexriscv:
-	rm $(VEXRISCV_SRC_DIR)/$(CPU).v
+	rm -f $(VEXRISCV_SRC_DIR)/$(CPU)MemIf.v
+	rm -f $(VEXRISCV_GEN_DIR)/$(CPU).v
 
 clean-all: clean-vexriscv
