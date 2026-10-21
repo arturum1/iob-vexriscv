@@ -2722,14 +2722,14 @@ module VexRiscvAxi4LinuxMemIf (
   assign regfile_a_w_en_o = RegFilePlugin_regFile_wr_en;
   assign regfile_a_w_addr_o = lastStageRegFileWrite_payload_address[4:0];
   assign regfile_a_w_data_o = _zz_wr_data[31:0];
-  assign regfile_a_r_en_o = RegFilePlugin_regFile_rd_en & 1'b1;
+  assign regfile_a_r_en_o = RegFilePlugin_regFile_rd_en;
   assign regfile_a_r_addr_o = decode_RegFilePlugin_regFileReadAddress1[4:0];
   assign RegFilePlugin_regFile_rd_data[31:0] = regfile_a_r_data_i;
   assign regfile_b_clk_o = clk;
   assign regfile_b_w_en_o = RegFilePlugin_regFile_1_wr_en;
   assign regfile_b_w_addr_o = lastStageRegFileWrite_payload_address[4:0];
   assign regfile_b_w_data_o = _zz_wr_data[31:0];
-  assign regfile_b_r_en_o = RegFilePlugin_regFile_1_rd_en & 1'b1;
+  assign regfile_b_r_en_o = RegFilePlugin_regFile_1_rd_en;
   assign regfile_b_r_addr_o = decode_RegFilePlugin_regFileReadAddress2[4:0];
   assign RegFilePlugin_regFile_1_rd_data[31:0] = regfile_b_r_data_i;
   always @(*) begin
@@ -8788,14 +8788,14 @@ module DataCache (
   assign dcache_tags_w_en_o = ways_0_tags_wr_en;
   assign dcache_tags_w_addr_o = tagsWriteCmd_payload_address[5:0];
   assign dcache_tags_w_data_o = ways_0_tags_wr_data[21:0];
-  assign dcache_tags_r_en_o = ways_0_tags_rd_en & 1'b1;
+  assign dcache_tags_r_en_o = ways_0_tags_rd_en;
   assign dcache_tags_r_addr_o = tagsReadCmd_payload[5:0];
   assign ways_0_tags_rd_data[21:0] = dcache_tags_r_data_i;
   assign dcache_data_clk_o = clk;
-  assign dcache_data_w_strb_o = dataWriteCmd_payload_mask[3:0];
+  assign dcache_data_w_strb_o = ways_0_data_wr_en ? dataWriteCmd_payload_mask[3:0] : 4'b0;
   assign dcache_data_w_addr_o = dataWriteCmd_payload_address[9:0];
   assign dcache_data_w_data_o = dataWriteCmd_payload_data[31:0];
-  assign dcache_data_r_en_o = ways_0_data_rd_en & 1'b1;
+  assign dcache_data_r_en_o = ways_0_data_rd_en;
   assign dcache_data_r_addr_o = dataReadCmd_payload[9:0];
   assign ways_0_data_rd_data[31:0] = dcache_data_r_data_i;
   always @(*) begin
@@ -9633,14 +9633,14 @@ module InstructionCache (
   assign icache_data_w_en_o = banks_0_wr_en;
   assign icache_data_w_addr_o = lineLoader_write_data_0_payload_address[9:0];
   assign icache_data_w_data_o = lineLoader_write_data_0_payload_data[31:0];
-  assign icache_data_r_en_o = banks_0_rd_en & 1'b1;
+  assign icache_data_r_en_o = banks_0_rd_en;
   assign icache_data_r_addr_o = banks_0_rd_addr[9:0];
   assign banks_0_rd_data[31:0] = icache_data_r_data_i;
   assign icache_tags_clk_o = clk;
   assign icache_tags_w_en_o = ways_0_tags_wr_en;
   assign icache_tags_w_addr_o = lineLoader_write_tag_0_payload_address[5:0];
   assign icache_tags_w_data_o = ways_0_tags_wr_data[21:0];
-  assign icache_tags_r_en_o = ways_0_tags_rd_en & 1'b1;
+  assign icache_tags_r_en_o = ways_0_tags_rd_en;
   assign icache_tags_r_addr_o = ways_0_tags_rd_addr[5:0];
   assign ways_0_tags_rd_data[21:0] = icache_tags_r_data_i;
   always @(*) begin

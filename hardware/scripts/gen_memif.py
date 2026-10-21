@@ -49,9 +49,7 @@ PASS_THROUGH_INSTANCES = {
 }
 
 MODULE_RE = re.compile(r"\bmodule\s+(\w+)\s*\((.*?)\);(.*?)\bendmodule", re.DOTALL)
-INSTANCE_RE = re.compile(
-    r"Ram_1w_1rs\s*#\s*\((.*?)\)\s*(\w+)\s*\((.*?)\);", re.DOTALL
-)
+INSTANCE_RE = re.compile(r"Ram_1w_1rs\s*#\s*\((.*?)\)\s*(\w+)\s*\((.*?)\);", re.DOTALL)
 CONN_RE = re.compile(r"\.(\w+)\s*\(\s*([^()]*?)\s*\)")
 
 
@@ -123,17 +121,30 @@ def signal_names(prefix, mem_type):
     return names
 
 
-def memory_assigns(prefix, mem_type, conns):
-    """Return assign statements replacing a Ram_1w_1rs instance."""
+def memory_assigns(prefix, mem_type, conns, strb_w):
+    """Return assign statements replacing a Ram_1w_1rs instance.
+
+    The SpinalHDL ``Ram_1w_1rs`` primitive only writes a byte lane when both
+    ``wr_en`` and the corresponding ``wr_mask`` bit are set, while the py2hwsw
+    ``ram_t2p_be`` interface only carries the byte strobes.  Fold ``wr_en`` into
+    the strobes so the write semantics are preserved.
+
+    Likewise, the primitive gates the read register with ``rd_en`` only
+    (``rd_dataEn`` does not gate it), so ``r_en`` must not be combined with
+    ``rd_dataEn``.
+    """
     lines = [f"  assign {prefix}clk_o = {conns['wr_clk']};"]
     if mem_type == "ram_t2p_be":
-        lines.append(f"  assign {prefix}w_strb_o = {conns['wr_mask']};")
+        lines.append(
+            f"  assign {prefix}w_strb_o = {conns['wr_en']} ? "
+            f"{conns['wr_mask']} : {strb_w}'b0;"
+        )
     else:
         lines.append(f"  assign {prefix}w_en_o = {conns['wr_en']};")
     lines += [
         f"  assign {prefix}w_addr_o = {conns['wr_addr']};",
         f"  assign {prefix}w_data_o = {conns['wr_data']};",
-        f"  assign {prefix}r_en_o = {conns['rd_en']} & {conns['rd_dataEn']};",
+        f"  assign {prefix}r_en_o = {conns['rd_en']};",
         f"  assign {prefix}r_addr_o = {conns['rd_addr']};",
         f"  assign {conns['rd_data']} = {prefix}r_data_i;",
     ]
@@ -196,15 +207,13 @@ def transform(text):
                     body_start + inst_match.end(),
                     # The instance's original indentation is kept, so drop the
                     # indent from the first assign line.
-                    memory_assigns(prefix, mem_type, conns).lstrip(),
+                    memory_assigns(prefix, mem_type, conns, strb_w).lstrip(),
                 )
             )
         if ports:
             module_ports[module_name] = ports
 
-    missing = {f"{m}.{i}" for m, i in MEMORIES} - {
-        f"{m}.{i}" for m, i in memory_params
-    }
+    missing = {f"{m}.{i}" for m, i in MEMORIES} - {f"{m}.{i}" for m, i in memory_params}
     if missing:
         found = sorted(f"{m}.{i}" for m, i in memory_params)
         raise RuntimeError(
@@ -271,12 +280,16 @@ def transform(text):
         for (mod, inst), (prefix, mem_type) in MEMORIES.items():
             if mod != module_name:
                 continue
-            conns += [
-                f"    .{name}({name})" for name in signal_names(prefix, mem_type)
-            ]
+            conns += [f"    .{name}({name})" for name in signal_names(prefix, mem_type)]
         if conns:
             close_idx = block.rindex(");")
-            block = block[:close_idx] + ",\n" + ",\n".join(conns) + "\n  " + block[close_idx:]
+            block = (
+                block[:close_idx]
+                + ",\n"
+                + ",\n".join(conns)
+                + "\n  "
+                + block[close_idx:]
+            )
             text = text[:start] + block + text[end:]
 
     marker = (
